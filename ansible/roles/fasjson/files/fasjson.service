@@ -1,0 +1,18 @@
+.include /lib/systemd/system/fasjson.service
+
+[Unit]
+Description=fasjson
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Environment=FLASK_APP=/vagrant/fasjson/web/app.py
+Environment=KRB5CCNAME=/tmp/krb5cc-httpd
+Environment=GSS_USE_PROXY=yes
+Environment=FLASK_DEBUG=1
+User=vagrant
+WorkingDirectory=/vagrant
+ExecStart=poetry run flask run -h 0.0.0.0 --without-threads
+
+[Install]
+WantedBy=multi-user.target

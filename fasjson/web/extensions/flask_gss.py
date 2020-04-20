@@ -13,11 +13,12 @@ class FlaskGSSAPI(object):
         app.before_request(self._gssapi_check)
 
     def _gssapi_check(self):
+        print(request)
+
         environ = request.environ
         if environ['wsgi.multithread']:
             raise errors.WebApiError('GSSAPI is not compatible with multi-threaded WSGI servers.',
                 400, data={'request.environ.name': 'wsgi.multithread'})
-
         ccache = environ.get('KRB5CCNAME')
         if not ccache:
             raise errors.WebApiError('KRB5CCNAME missing',
@@ -25,7 +26,7 @@ class FlaskGSSAPI(object):
 
         principal = environ.get('GSS_NAME')
         if not principal:
-            raise errors.WebApiError('KRB5CCNAME missing',
+            raise errors.WebApiError('GSS_NAME missing',
                 500, data={'request.environ.name': 'GSS_NAME'})
 
         gss_name = gssapi.Name(principal, gssapi.NameType.kerberos_principal)
