@@ -1,59 +1,59 @@
 ---
-# - name: Install RPM packages
-#   dnf:
-#     name:
-#       - ipa-client
-#       - httpd
-#       - mod_auth_gssapi
-#       - mod_session
-#       - python3-mod_wsgi
-#       - python3-dns
-#       - python3-flask
-#       - python3-gssapi
-#       - python3-ldap
-#       - python3-pip
-#       - python3-wheel
-#       - python3-devel
-#       - openldap-devel
-#       - krb5-devel
-#       - poetry
-#       - '@Development Tools'
-#     state: present
+- name: Install RPM packages
+  dnf:
+    name:
+      - ipa-client
+      - httpd
+      - mod_auth_gssapi
+      - mod_session
+      - python3-mod_wsgi
+      - python3-dns
+      - python3-flask
+      - python3-gssapi
+      - python3-ldap
+      - python3-pip
+      - python3-wheel
+      - python3-devel
+      - openldap-devel
+      - krb5-devel
+      - poetry
+      - '@Development Tools'
+    state: present
 
-# - name: Tell poetry to use in-project venv
-#   shell: poetry config virtualenvs.in-project true
-#   become: yes
-#   become_user: vagrant
-#   args:
-#     chdir: /vagrant/
+- name: Tell poetry to use in-project venv
+  shell: poetry config virtualenvs.in-project true
+  become: yes
+  become_user: vagrant
+  args:
+    chdir: /vagrant/
 
-# - name: Install python dependencies with poetry
-#   shell: poetry install
-#   become: yes
-#   become_user: vagrant
-#   args:
-#     chdir: /vagrant/
+- name: Install python dependencies with poetry
+  shell: poetry install
+  become: yes
+  become_user: vagrant
+  args:
+    chdir: /vagrant/
 
-# - name: Install the .bashrc
-#   copy:
-#       src: .bashrc
-#       dest: /home/vagrant/.bashrc
-#       mode: 0644
-#       owner: vagrant
-#       group: vagrant
+- name: Install the .bashrc
+  copy:
+      src: .bashrc
+      dest: /home/vagrant/.bashrc
+      mode: 0644
+      owner: vagrant
+      group: vagrant
 
-# - name: Copy wsgi
-#   copy:
-#     src: fasjson.wsgi
-#     dest: /usr/share/fasjson/
-#     mode: 0644
-#     owner: vagrant
-#     group: vagrant
+- name: Copy wsgi
+  copy:
+    src: fasjson.wsgi
+    dest: /usr/share/fasjson/
+    mode: 0644
+    owner: vagrant
+    group: vagrant
 
-# - name: Allow apache to to see /usr/share/fasjson/
-#   sefcontext:
-#     target: '/usr/share/fasjson(/.*)?'
-#     setype: httpd_sys_content_t
+- name: Allow apache to to see /usr/share/fasjson/
+  sefcontext:
+    target: '/usr/share/fasjson(/.*)?'
+    setype: httpd_sys_content_t
 
 - name: Uninstall any old clients
   shell: ipa-client-install --uninstall --unattended
@@ -93,20 +93,20 @@
     mode: 0640
   become: yes
 
-- name: Install the systemd unit files for fasjson
-  copy:
-      src: "{{ item }}"
-      dest: /etc/systemd/system/{{ item }}
-      mode: 0644
-  with_items:
-      - fasjson.service
+# - name: Install the systemd unit files for fasjson
+#   copy:
+#       src: "{{ item }}"
+#       dest: /etc/systemd/system/{{ item }}
+#       mode: 0644
+#   with_items:
+#       - fasjson.service
 
-- name: Start fasjson service using systemd
-  systemd:
-    state: started
-    name: fasjson
-    daemon_reload: yes
-    enabled: yes
+# - name: Start fasjson service using systemd
+#   systemd:
+#     state: started
+#     name: fasjson
+#     daemon_reload: yes
+#     enabled: yes
 
 - name: Copy gssproxy conf
   copy:
@@ -123,40 +123,40 @@
     enabled: yes
     daemon_reload: yes
 
-# - name: Configure temporary files
-#   copy:
-#     src: config/tmpfiles-fasjson.conf
-#     dest: /etc/tmpfiles.d/fasjson.conf
+- name: Configure temporary files
+  copy:
+    src: config/tmpfiles-fasjson.conf
+    dest: /etc/tmpfiles.d/fasjson.conf
 
-# - name: Create temporary file
-#   shell: systemd-tmpfiles --create
+- name: Create temporary file
+  shell: systemd-tmpfiles --create
 
-# - name: Tune SELinux Policy
-#   seboolean:
-#     name: httpd_can_connect_ldap
-#     state: yes
-#     persistent: yes
+- name: Tune SELinux Policy
+  seboolean:
+    name: httpd_can_connect_ldap
+    state: yes
+    persistent: yes
 
 
 
-# - name: Create Apache service
-#   file:
-#     path: /etc/systemd/system/httpd.service.d
-#     state: directory
-#     mode: 0755
+- name: Create Apache service
+  file:
+    path: /etc/systemd/system/httpd.service.d
+    state: directory
+    mode: 0755
 
-# - name: Copy configs for Apache
-#   copy: src={{ item.src }} dest={{ item.dest }}
-#   with_items:
-#     - src: "config/systemd-httpd-service-fasjson.conf"
-#       dest: "/etc/systemd/system/httpd.service.d/fasjson.conf"
-#     - src: "config/httpd-fasjson.conf"
-#       dest: "/etc/httpd/conf.d/fasjson.conf"
+- name: Copy configs for Apache
+  copy: src={{ item.src }} dest={{ item.dest }}
+  with_items:
+    - src: "config/systemd-httpd-service-fasjson.conf"
+      dest: "/etc/systemd/system/httpd.service.d/fasjson.conf"
+    - src: "config/httpd-fasjson.conf"
+      dest: "/etc/httpd/conf.d/fasjson.conf"
 
-# - name: Enable and restart Apache
-#   systemd:
-#     state: restarted
-#     name: httpd
-#     enabled: yes
-#     daemon_reload: yes
+- name: Enable and restart Apache
+  systemd:
+    state: restarted
+    name: httpd
+    enabled: yes
+    daemon_reload: yes
 

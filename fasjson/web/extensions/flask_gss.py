@@ -13,8 +13,6 @@ class FlaskGSSAPI(object):
         app.before_request(self._gssapi_check)
 
     def _gssapi_check(self):
-        print(request)
-
         environ = request.environ
         if environ['wsgi.multithread']:
             raise errors.WebApiError('GSSAPI is not compatible with multi-threaded WSGI servers.',
